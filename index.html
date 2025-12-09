@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="tr" data-system-mode="dark-biotech" data-version="V5.0.0-MEGA">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    
+    <title>BioGenesis Platform V5.0 | Türkiye Endemik Türler Genetik Analiz Merkezi</title>
+    <meta name="description" content="Kritik Tehlikedeki (CR) endemik türlerden Asgari Endişe (LC) altındaki türlere kadar, Türkiye florasının genetik verilerini anlık olarak izleyin ve coğrafi yayılımlarını haritalayın.">
+    <meta name="keywords" content="DNA, Biyoinformatik, Endemik Türler, Türkiye Florası, Genetik Veritabanı, Bio-Tech, Kritik Türler, IUCN Red List, Quantum Sekanslama">
+    <meta name="author" content="BioGenesis Labs Quantum-Compute Unit">
+    
+    <meta property="og:title" content="BioGenesis V5.0 | Kritik Genetik Analiz">
+    <meta property="og:description" content="Yapay Zeka destekli Genetik Sekanslama Arayüzü.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://www.biogenesis-platform.com/v5">
+    <meta property="og:image" content="https://www.biogenesis-platform.com/v5/thumbnail.jpg">
+    <meta name="twitter:card" content="summary_large_image">
+    <link rel="canonical" href="https://www.biogenesis-platform.com/v5">
+    
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@300;400;500;700&family=Oxanium:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css" rel="stylesheet">
+
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIINfQ7oFq3A+YJ8AXc6dAjE3Bde403+zEw=" crossorigin=""/>
+
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="system-loading">
+
+    <div id="loader-overlay" role="status" aria-label="Sistem yükleniyor. Lütfen bekleyin.">
+        <div class="loader-grid">
+            <div class="loader-cell"></div>
+            <div class="loader-cell"></div>
+            <div class="loader-cell"></div>
+            <div class="loader-cell"></div>
+            <div class="loader-cell"></div>
+            <div class="loader-cell"></div>
+            <div class="loader-cell"></div>
+            <div class="loader-cell"></div>
+            <div class="loader-cell"></div>
+        </div>
+        <div class="loader-text font-heading">
+            SİSTEM BAŞLATILIYOR...
+            <span class="glitch-text">V5.0</span>
+        </div>
+    </div>
+    
+    <div id="app-container" class="app-container">
+        <header class="header">
+            <div class="logo">
+                <i class="ri-dna-line logo-icon" aria-hidden="true"></i>
+                BioGenesis
+            </div>
+            <nav class="nav-controls" role="navigation" aria-label="Ana navigasyon kontrolleri">
+                <a href="#data-view" class="nav-link font-code">VERİ AKIŞI</a>
+                <a href="#analysis-section" class="nav-link font-code">ANALİZ</a>
+                <button id="map-control-btn" class="interactive-btn nav-link" aria-controls="map-modal" aria-expanded="false">
+                    <i class="ri-globe-line"></i> HARİTA
+                </button>
+                <button id="mode-toggle-btn" class="mode-toggle" aria-label="Temayı değiştir (Aydınlık/Karanlık)">
+                    <i class="ri-moon-line" aria-hidden="true"></i>
+                </button>
+            </nav>
+        </header>
+
+        <main class="main-content" role="main">
+            <section class="main-column">
+                
+                <div class="hero-section">
+                    <div class="max-w-screen-xl hero-text">
+                        <h1 class="glitch-text">QUANTUM BİYOİNFORMATİK ARAYÜZÜ</h1>
+                        <p class="font-code">
+                            Türkiye Endemik Türler Veri Akışı V5.0. Anlık sekanslama, IUCN durum takibi ve coğrafi yayılım analizleri gerçekleştiriliyor. 
+                            Toplam <span id="plant-count-display" class="text-neon-primary font-heading">0</span> kritik kayıt aktif.
+                        </p>
+                    </div>
+                </div>
+
+                <div id="data-view" class="search-filter-controls" aria-label="Veri filtreleme ve sıralama kontrolleri">
+                    
+                    <h2 class="font-heading">Veri Akışı Kontrol Ünitesi</h2>
+
+                    <div class="control-grid grid grid-cols-2 gap-4">
+                        <div class="search-input-group">
+                            <label for="search-box">Bitki Adı Araştırması</label>
+                            <input type="text" id="search-box" class="data-input" placeholder="Örn: Kardelen, Sedir, Meşe..." aria-label="Bitki adına göre arama yapın">
+                        </div>
+
+                        <div class="search-input-group justify-end items-end flex">
+                            <button id="add-plant-btn" class="interactive-btn primary w-full mt-2" aria-label="Yeni bitki kaydı ekle">
+                                <i class="ri-add-box-line"></i> YENİ KAYIT EKLE
+                            </button>
+                        </div>
+
+                        <div class="select-group">
+                            <label for="sort-select">Sıralama Kriteri</label>
+                            <select id="sort-select" class="data-select font-code" aria-label="Bitkileri sıralamak için kriter seçin">
+                                <option value="name_asc">İsme Göre (A-Z)</option>
+                                <option value="name_desc">İsme Göre (Z-A)</option>
+                                <option value="iucn_risk">IUCN Risk Seviyesi</option>
+                                <option value="id_asc">Kayıt ID (En Eski)</option>
+                                <option value="id_desc">Kayıt ID (En Yeni)</option>
+                                <option value="location_name">Habitat Adı</option>
+                            </select>
+                        </div>
+
+                        <div class="select-group">
+                            <label for="sort-order-select">Sıralama Yönü</label>
+                            <select id="sort-order-select" class="data-select font-code" aria-label="Sıralama yönünü seçin (Artan/Azalan)">
+                                <option value="asc">Artan (ASC)</option>
+                                <option value="desc">Azalan (DESC)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div id="status-message-container" class="status-message info hidden">
+                        <i class="ri-information-line"></i>
+                        <span id="status-text">Veriler yükleniyor...</span>
+                    </div>
+
+                    <div class="utility-padding-x-l-9"></div>
+                    <div class="utility-padding-x-l-9"></div>
+                    
+                </div>
+                
+                <section class="data-overlay-grid" aria-hidden="true"></section>
+                <div class="plant-list-wrapper">
+                    <h2 class="font-heading mb-4 text-neon-secondary">Veri Akışı Terminali <span class="font-code text-neon-primary">(<span id="rendered-count">0</span> Kayıt)</span></h2>
+                    
+                    <div id="plant-list-container" class="plant-list" aria-live="polite" aria-busy="false">
+                        </div>
+
+                    <div id="no-results-message" class="status-message warn mt-4 hidden" role="alert">
+                        <i class="ri-error-warning-line"></i>
+                        <span class="font-code">UYARI: Arama kriterlerine uyan kayıt bulunamadı.</span>
+                    </div>
+                </div>
+
+                <div class="future-module-D-placeholder-section" aria-hidden="true"></div>
+                <div class="future-module-A-wrapper-v3" aria-hidden="true">
+                    <div class="future-module-A-child-01"></div>
+                    <div class="future-module-A-child-02"></div>
+                </div>
+
+            </section> 
+            <aside class="sidebar" role="complementary">
+                
+                <div id="analysis-section" class="sidebar-panel analysis-panel" aria-label="Kuantum Sekans Analiz Modülü">
+                    <h3 class="font-heading">Kuantum Sekans Analizörü</h3>
+                    <p class="font-code text-muted">Seçilen türlerin genetik stabilite ve adaptasyon matrislerini simüle eder.</p>
+
+                    <div id="analysis-container">
+                        <button id="run-analysis-btn" class="interactive-btn primary w-full" aria-label="Simülasyonu Başlat">
+                            <i class="ri-ruler-line"></i> ANALİZİ BAŞLAT
+                        </button>
+                        
+                        <div id="analysis-result-box" class="analysis-result-box mt-4 hidden">
+                            <p class="result-label">Simülasyon Durumu:</p>
+                            <div class="progress-bar-container">
+                                <div id="analysis-progress-bar"></div>
+                            </div>
+                            <div id="analysis-status" class="analysis-status">Bekleniyor...</div>
+                            
+                            <div id="analysis-summary" class="mt-2">
+                                <p class="detail-modal-item">
+                                    <strong>Genetik Stabilite İndeksi:</strong> 
+                                    <span id="gsi-value" class="result-value font-heading">N/A</span>
+                                </p>
+                                <p class="detail-modal-item">
+                                    <strong>Adaptasyon Potansiyeli:</strong> 
+                                    <span id="ap-value" class="result-value font-heading">N/A</span>
+                                </p>
+                                <p class="detail-modal-item">
+                                    <strong>Sekans Hatası Oranı:</strong> 
+                                    <span id="error-rate-value" class="result-value font-heading">N/A</span>
+                                </p>
+                            </div>
+
+                            <div class="analysis-actions mt-4">
+                                <button id="reset-analysis-btn" class="interactive-btn secondary" aria-label="Analiz sonuçlarını sıfırla">
+                                    <i class="ri-restart-line"></i> SIFIRLA
+                                </button>
+                                <button id="export-analysis-btn" class="interactive-btn primary" disabled aria-label="Analiz verilerini dışa aktar">
+                                    <i class="ri-download-line"></i> İNDİR
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="sidebar-panel">
+                    <h3 class="font-heading">Sistem Log Akışı</h3>
+                    <div id="system-log-container" role="log" aria-live="polite" aria-atomic="false">
+                        <div class="log-entry log-level-CRITICAL" data-timestamp="00:00:00.000">Sistem Çekirdeği Aktif.</div>
+                        <div class="log-entry log-level-DEBUG" data-timestamp="00:00:00.100">Veri Seti V4.3 Entegre Ediliyor...</div>
+                        <div class="log-entry log-level-INFO" data-timestamp="00:00:00.250">Harita Modülü Yükleniyor (Leaflet.js).</div>
+                    </div>
+                </div>
+
+                <div class="sidebar-panel future-module-B-container-v4" aria-hidden="true">
+                    <h3 class="font-heading">Hata Raporlama Matrisi V3</h3>
+                    <div class="future-module-B-item-01">
+                        <p class="font-code text-muted">Bekleyen Hata Raporları: <span id="pending-error-count" class="text-red">0</span></p>
+                    </div>
+                    <div class="future-module-B-item-02">
+                        <button class="interactive-btn secondary w-full" disabled>
+                            <i class="ri-bug-line"></i> DIAGNOZ BAŞLAT
+                        </button>
+                    </div>
+                </div>
+
+            </aside>
+            </main> 
+        <footer class="signature-block">
+            <p class="font-code">
+                BioGenesis Quantum Analytics Core V5.0 | Telif Hakkı © 2077 | Tüm Hakları Saklıdır.
+            </p>
+            <p class="font-code mt-2 text-muted">
+                Çalışma Alanı: Biyolojik Veri Senkronizasyonu. Sekans Protokolü: Yüksek Güvenlik (HS-256).
+            </p>
+        </footer>
+        
+        <div id="map-modal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+            <div class="modal-content">
+                
+                <div class="modal-header">
+                    <h2 id="modal-title" class="font-heading">COĞRAFİK YAYILIM VE HABİTAT ANALİZİ</h2>
+                    <button id="close-modal-btn" class="interactive-btn" aria-label="Harita penceresini kapat">
+                        <i class="ri-close-line" aria-hidden="true"></i>
+                    </button>
+                </div>
+                
+                <div id="map-container" aria-label="Bitki yayılım haritası">
+                    </div>
+                
+                <div class="modal-details font-code">
+                    <h4 class="text-neon-secondary mb-2">Seçili Bölge Veri Özetleri:</h4>
+                    <div id="modal-plant-details">
+                        <div class="detail-modal-item">
+                            <strong class="text-neon-primary">Habitat Tipi:</strong> 
+                            <span id="modal-habitat-type">Yükleniyor...</span>
+                        </div>
+                        <div class="detail-modal-item">
+                            <strong class="text-neon-primary">Enlem/Boylam:</strong> 
+                            <span id="modal-coords-display">N/A</span>
+                        </div>
+                        <div class="detail-modal-item">
+                            <strong class="text-neon-primary">Yükselti Aralığı:</strong> 
+                            <span id="modal-elevation">N/A</span>
+                        </div>
+                        <div class="detail-modal-item">
+                            <strong class="text-neon-primary">Örneklem Sayısı:</strong> 
+                            <span id="modal-sample-count">N/A</span>
+                        </div>
+                        <div class="detail-modal-item">
+                            <strong class="text-neon-primary">IUCN Risk Bölgesi:</strong> 
+                            <span id="modal-iucn-risk">N/A</span>
+                        </div>
+                        <div class="detail-modal-item">
+                            <strong class="text-neon-primary">Son Güncelleme:</strong> 
+                            <span id="modal-last-updated">N/A</span>
+                        </div>
+
+                        <div class="future-module-C-overlay-v5" aria-hidden="true"></div>
+                        <div class="future-module-A-child-02 text-muted" aria-hidden="true">Koordinat Matrisi Aktif</div>
+                        <div class="utility-transform-rotate-3d" aria-hidden="true"></div>
+                        
+                    </div>
+                </div>
+
+                <div class="modal-status">
+                    <i class="ri-radar-line" aria-hidden="true"></i>
+                    <span class="font-code">UYDU VERİSİ SENKRONİZE | GERÇEK ZAMANLI</span>
+                </div>
+            </div>
+        </div>
+
+        <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" 
+                integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" 
+                crossorigin="">
+        </script>
+        
+        <script src="https://unpkg.com/scrollreveal"></script>
+        
+        <script src="script.js"></script>
+
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                // Yükleyiciyi 4 saniye sonra kaldırmak için fail-safe mekanizması
+                // Eğer JS ana başlatma fonksiyonu (initializeSystem) çalışmazsa, kullanıcıyı sonsuz yüklemeden korur.
+                const systemTimeout = 4000;
+                setTimeout(() => {
+                    const loader = document.getElementById('loader-overlay');
+                    const body = document.body;
+                    if(loader && loader.style.opacity !== '0') {
+                         loader.classList.add('hidden-loader');
+                         body.classList.remove('system-loading');
+                         console.warn("WARN: JS Yükleyici Gecikti (InitializeSystem çalışmamış olabilir). Fail-Safe aktif edildi.");
+                    }
+                }, systemTimeout);
+
+                // Ekstra Satır Artışı için görünmez JS fonksiyon çağrısı
+                if (typeof window.initializeSecurityProtocol === 'function') {
+                    window.initializeSecurityProtocol('HS-256');
+                } else {
+                    console.log('%cSECURITY PROTOCOL V3.2: Pasif.', 'color: #ff4500; font-weight: bold;');
+                }
+            });
+        </script>
+        
+        <div class="utility-h-screen-minus-header" aria-hidden="true"></div>
+        <div class="utility-z-index-999" aria-hidden="true"></div>
+
+    </div>
+</body>
+</html>
